@@ -30,7 +30,7 @@ jobs:
         with:
           image_name: ${{ github.repository }} # it will be lowercased internally
           github_token: ${{ secrets.RELEASE_TOKEN }}
-          dockerfile_path: ./scripts
+          dockerfile: ./scripts
 
       - name: notify
         run: |
