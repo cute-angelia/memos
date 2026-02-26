@@ -87,6 +87,11 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
         queryClient.invalidateQueries({ queryKey: userKeys.stats() }),
       ];
 
+      // Ensure memo detail pages don't keep stale cached content after edits.
+      if (memoName) {
+        invalidationPromises.push(queryClient.invalidateQueries({ queryKey: memoKeys.detail(memoName) }));
+      }
+
       // If this was a comment, also invalidate the comments query for the parent memo
       if (parentMemoName) {
         invalidationPromises.push(queryClient.invalidateQueries({ queryKey: memoKeys.comments(parentMemoName) }));
@@ -96,6 +101,9 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
 
       // Reset editor state to initial values
       dispatch(actions.reset());
+      if (!memoName && defaultVisibility) {
+        dispatch(actions.setMetadata({ visibility: defaultVisibility }));
+      }
 
       // Notify parent component of successful save
       onConfirm?.(result.memoName);
@@ -130,7 +138,11 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
         {/* Exit button is absolutely positioned in top-right corner when active */}
         <FocusModeExitButton isActive={state.ui.isFocusMode} onToggle={handleToggleFocusMode} title={t("editor.exit-focus-mode")} />
 
-        {memoName && <TimestampPopover />}
+        {memoName && (
+          <div className="w-full -mb-1">
+            <TimestampPopover />
+          </div>
+        )}
 
         {/* Editor content grows to fill available space in focus mode */}
         <EditorContent ref={editorRef} placeholder={placeholder} autoFocus={autoFocus} />
